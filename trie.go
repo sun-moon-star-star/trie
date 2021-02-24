@@ -100,6 +100,9 @@ func (trie *Trie) Write(key string, value interface{}) uint32 {
 	if cur.Data.Value == nil && value != nil {
 		trie.ValueCnt++
 	}
+	if cur.Data.Value != nil && value == nil {
+		trie.ValueCnt--
+	}
 
 	cur.Data.Value = value
 
