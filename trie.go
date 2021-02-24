@@ -3,6 +3,8 @@ package trie
 func NewWithOptions(options Options) *Trie {
 	trie := &Trie{
 		Depth:      1,
+		ValueCnt:   0,
+		Cnt:        1,
 		Comparator: options.Comparator,
 		SplitKey:   options.SplitKey,
 		Root: Node{
@@ -23,6 +25,10 @@ func NewWithOptions(options Options) *Trie {
 
 	if trie.SplitKey == nil {
 		trie.SplitKey = DefaultOptions.SplitKey
+	}
+
+	if trie.Root.Data.Value != nil {
+		trie.ValueCnt = 1
 	}
 
 	return trie
@@ -90,16 +96,18 @@ func (trie *Trie) Write(key string, value interface{}) uint32 {
 		}
 		cur = ch
 	}
+
+	if cur.Data.Value == nil && value != nil {
+		trie.ValueCnt++
+	}
+
 	cur.Data.Value = value
 
 	if depth > trie.Depth {
 		trie.Depth = depth
 	}
 
-	if cnt > 0 {
-		trie.Cnt++
-		trie.Sum += cnt
-	}
+	trie.Cnt += cnt
 	return cnt
 }
 
