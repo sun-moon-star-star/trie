@@ -1,9 +1,10 @@
 package trie
 
 func NewWithOptions(options Options) *Trie {
-	return &Trie{
+	trie := &Trie{
 		Depth:      1,
 		Comparator: options.Comparator,
+		SplitKey:   options.SplitKey,
 		Root: Node{
 			Data: NodeData{
 				Key:   options.RootKey,
@@ -15,6 +16,16 @@ func NewWithOptions(options Options) *Trie {
 			Children: nil,
 		},
 	}
+
+	if trie.Comparator == nil {
+		trie.Comparator = DefaultOptions.Comparator
+	}
+
+	if trie.SplitKey == nil {
+		trie.SplitKey = DefaultOptions.SplitKey
+	}
+
+	return trie
 }
 
 func New() *Trie {
@@ -37,11 +48,31 @@ func (trie *Trie) matchChildrenNode(fa *Node, key *string) *Node {
 	return nil
 }
 
-func (trie *Trie) Set(keys []string, value interface{}) int32 {
+func (trie *Trie) Write(key string, value interface{}) int32 {
+	keys := trie.SplitKey(key)
+	len := len(keys)
+	var depth uint32
+
+	if len == 0 {
+		return 0
+	}
+
 	cur := &trie.Root
 	cnt := int32(0)
+	idx := 0
 
-	for _, key := range keys {
+	if keys[0] == "" {
+		idx = 1
+		depth = 1
+	}
+
+	for idx < len {
+		key := keys[idx]
+		idx++
+		if key == "" {
+			continue
+		}
+		depth++
 		ch := trie.matchChildrenNode(cur, &key)
 		if ch == nil {
 			ch = &Node{
@@ -54,17 +85,21 @@ func (trie *Trie) Set(keys []string, value interface{}) int32 {
 				Next:     cur.Children,
 				Children: nil,
 			}
+			cur.Children = ch
 			cnt++
 		}
 		cur = ch
 	}
 	cur.Data.Value = value
-
+	if depth > trie.Depth {
+		trie.Depth = depth
+	}
 	return cnt
 }
 
-func (trie *Trie) Get(keys []string) *Node {
+func (trie *Trie) Read(key string) *Node {
 	cur := &trie.Root
+	keys := trie.SplitKey(key)
 
 	for _, key := range keys {
 		ch := trie.matchChildrenNode(cur, &key)
