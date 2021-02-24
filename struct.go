@@ -44,7 +44,7 @@ var DefaultOptions = Options{
 		if x == nil || y == nil {
 			return x == y
 		}
-		return x == y
+		return *x == *y
 	},
 	SplitKey: func(key string) []string {
 		return strings.Split(key, "/")

@@ -45,7 +45,7 @@ func (trie *Trie) matchChildrenNode(fa *Node, key *string) *Node {
 
 	ch := fa.Children
 	for ch != nil {
-		if trie.Comparator(&fa.Data.Key, key) {
+		if trie.Comparator(&ch.Data.Key, key) {
 			return ch
 		}
 		ch = ch.Next
@@ -100,6 +100,7 @@ func (trie *Trie) Write(key string, value interface{}) uint32 {
 	if cur.Data.Value == nil && value != nil {
 		trie.ValueCnt++
 	}
+
 	if cur.Data.Value != nil && value == nil {
 		trie.ValueCnt--
 	}
@@ -115,15 +116,27 @@ func (trie *Trie) Write(key string, value interface{}) uint32 {
 }
 
 func (trie *Trie) Read(key string) *Node {
-	cur := &trie.Root
 	keys := trie.SplitKey(key)
+	len := len(keys)
 
-	for _, key := range keys {
-		ch := trie.matchChildrenNode(cur, &key)
-		if ch == nil {
-			return nil
+	if len == 0 {
+		return nil
+	}
+
+	cur := &trie.Root
+	idx := 0
+
+	if keys[0] == "" {
+		idx = 1
+	}
+
+	for idx < len && cur != nil {
+		key := keys[idx]
+		idx++
+		if key == "" {
+			continue
 		}
-		cur = ch
+		cur = trie.matchChildrenNode(cur, &key)
 	}
 
 	return cur
