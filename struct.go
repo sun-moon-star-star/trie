@@ -7,8 +7,6 @@ type NodeData struct {
 	Value interface{}
 }
 
-type Comparator func(*string, *string) bool // equal
-
 type Node struct {
 	Data NodeData
 
@@ -17,29 +15,31 @@ type Node struct {
 	Children *Node
 }
 
+type Comparator func(*string, *string) bool // NodeData.Key
+
+type SplitStrategy func(string) []string
+
+type IgnoreStrategy func(string) bool
+
 type Trie struct {
 	Depth    uint32
 	ValueCnt uint32 // count(Node.Data.Value != nil)
 	Cnt      uint32
 
-	Comparator Comparator    `json:"-"`
-	SplitKey   SplitStrategy `json:"-"`
-	Root       Node
+	Comparator Comparator     `json:"-"`
+	SplitKey   SplitStrategy  `json:"-"`
+	IgnoreKey  IgnoreStrategy `json:"-"`
+
+	Header Node // no use
 }
 
-type SplitStrategy func(string) []string
-
 type Options struct {
-	RootKey   string
-	RootValue interface{}
-
-	Comparator Comparator    `json:"-"`
-	SplitKey   SplitStrategy `json:"-"`
+	Comparator Comparator     `json:"-"`
+	SplitKey   SplitStrategy  `json:"-"`
+	IgnoreKey  IgnoreStrategy `json:"-"`
 }
 
 var DefaultOptions = Options{
-	RootKey:   "",
-	RootValue: nil,
 	Comparator: func(x, y *string) bool {
 		if x == nil || y == nil {
 			return x == y
@@ -48,5 +48,8 @@ var DefaultOptions = Options{
 	},
 	SplitKey: func(key string) []string {
 		return strings.Split(key, "/")
+	},
+	IgnoreKey: func(key string) bool {
+		return key == ""
 	},
 }

@@ -9,12 +9,12 @@ import (
 
 func TestTrie(t *testing.T) {
 	trie := trie.New()
-	trie.Write("/", "hello")
 	trie.Write("/name", "zhaolu")
 	trie.Write("/name/alias", "rongminglu")
-	trie.Write("/height", 155.5)
+	trie.Write("height", 155.5)
 	trie.Write("/height", 155.8)
 	trie.Write("age", 22)
+	trie.Write("///", "hello world")
 
 	bytes, err := json.Marshal(trie)
 	if err != nil {
