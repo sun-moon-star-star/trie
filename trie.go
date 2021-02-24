@@ -48,7 +48,7 @@ func (trie *Trie) matchChildrenNode(fa *Node, key *string) *Node {
 	return nil
 }
 
-func (trie *Trie) Write(key string, value interface{}) int32 {
+func (trie *Trie) Write(key string, value interface{}) uint32 {
 	keys := trie.SplitKey(key)
 	len := len(keys)
 	var depth uint32
@@ -58,7 +58,7 @@ func (trie *Trie) Write(key string, value interface{}) int32 {
 	}
 
 	cur := &trie.Root
-	cnt := int32(0)
+	cnt := uint32(0)
 	idx := 0
 
 	if keys[0] == "" {
@@ -91,8 +91,14 @@ func (trie *Trie) Write(key string, value interface{}) int32 {
 		cur = ch
 	}
 	cur.Data.Value = value
+
 	if depth > trie.Depth {
 		trie.Depth = depth
+	}
+
+	if cnt > 0 {
+		trie.Cnt++
+		trie.Sum += cnt
 	}
 	return cnt
 }
